@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Protected Diary Login</title>
+    <link rel="stylesheet" href="diary.css">
+  <script src="diary.js" defer></script>
+</head>
+
+<body>
+    
+    <main>
+        <h1> Welcome to the diary!</h1>
+        <h2> Please log in or sign up to get started. :D</h2>
+    </main>
+
+    <div id="auth-buttons">
+        <button id="login-btn" onclick="showPasswordInput('login')">Log In</button>
+        <button id="signup-btn" onclick="showPasswordInput('signup')">Sign Up</button>
+    </div>
+    <div id="password-input" style="display: none;">
+        <p id="auth-message">Enter your password to log in:</p>
+        <input type="password" id="password-box" placeholder="Enter your password" oninput="evaluatePasswordStrength(this.value)">
+        <p id="password-strength" class="hidden">Password strength: Weak</p>
+        <button onclick="authenticateUser()">Submit</button>
+        <label>
+            <input type="checkbox" id="remember-me"> Remember Me
+        </label>
+        <p id="error-message" class="error hidden"></p>
+    </div>
+
+    <div id="loading-spinner" style="display: none;">Loading...</div>
+    <div id="toast" class="hidden"></div>
+</body>
+
+</html>
