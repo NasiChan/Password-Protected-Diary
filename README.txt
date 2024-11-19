@@ -15,4 +15,4 @@ Features:
 ├── diary.js          # Diary functionality
 └── README.md         # Project details
 
-Authors: Shreeya, Nas, Nitya
+Authors: Shreya, Nas, Nitya
