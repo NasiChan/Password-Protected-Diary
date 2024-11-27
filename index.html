@@ -11,28 +11,28 @@
 </head>
 
 <body>
-    
+
     <main>
         <h1> Welcome to the diary!</h1>
         <h2> Please log in or sign up to get started :D</h2>
-    
 
-    <div id="mode-selection">
-        <button onclick="showPasswordInput('login')">Login</button>
-        <button onclick="showPasswordInput('signup')">Sign Up</button>
-    </div>
 
-    <div id="password-input" class="hidden">
-        <p id="auth-message"></p>
-        <input type="password" id="password-box" placeholder="Enter your password">
-        <button onclick="authenticateUser()">Submit</button>
-    </div>
+        <div id="mode-selection">
+            <button onclick="showPasswordInput('login')">Login</button>
+            <button onclick="showPasswordInput('signup')">Sign Up</button>
+        </div>
 
-    <div id="popup" class="hidden">
-        <p id="popup-message"></p>
-        <button onclick="closePopup()">OK</button>
-    </div>
-</main>
+        <div id="password-input" class="hidden">
+            <p id="auth-message"></p>
+            <input type="password" id="password-box" placeholder="Enter your password">
+            <button onclick="authenticateUser()">Submit</button>
+        </div>
+
+        <div id="popup" class="hidden">
+            <p id="popup-message"></p>
+            <button onclick="closePopup()">OK</button>
+        </div>
+    </main>
 </body>
 
 </html>
