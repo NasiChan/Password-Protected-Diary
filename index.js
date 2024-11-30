@@ -1,91 +1,59 @@
-let authMode = "";
+const apiUrl = 'http://localhost:3000';
 
-function showPasswordInput(mode) {
-    authMode = mode;
+async function signUp() {
+    const username = document.getElementById('signup-username').value;
+    const password = document.getElementById('signup-password').value;
 
-    const passwordInputDiv = document.getElementById("password-input");
-    const authMessage = document.getElementById("auth-message");
+    // Show the loading spinner
+    toggleLoadingSpinner(true);
 
-    // Set the message based on the mode
-    authMessage.textContent =
-        mode === "login"
-            ? "Enter your password to log in:"
-            : "Create a new password to sign up:";
+    const response = await fetch(`${apiUrl}/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+    });
+    const result = await response.text();
 
-    // Show the password input section
-    passwordInputDiv.classList.remove("hidden");
+    // Hide the loading spinner
+    toggleLoadingSpinner(false);
+
+    document.getElementById('signup-result').innerText = result;
 }
 
-async function authenticateUser() {
-    const passwordBox = document.getElementById("password-box");
-    const password = passwordBox.value.trim();
+async function login() {
+    const username = document.getElementById('login-username').value;
+    const password = document.getElementById('login-password').value;
 
-    if (!password) {
-        showToast("Please enter a password.", "error");
-        return;
-    }
+    toggleLoadingSpinner(true);
 
-    if (authMode === "login") {
-        const storedPassword = localStorage.getItem("userPassword");
-        if (!storedPassword) {
-            showToast("No account found. Please sign up first.", "error");
-            return;
-        }
+    try {
+        const response = await fetch(`${apiUrl}/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+        const result = await response.json(); // Parse JSON response
 
-        const hashedPassword = await hashPassword(password);
-        if (hashedPassword === storedPassword) {
-            showToast("Login successful!", "success");
-            window.location.href = "diary.html";
+        toggleLoadingSpinner(false);
+
+        if (response.ok) {
+            if (result.redirect) {
+                // Redirect to the diary page
+                window.location.href = result.redirect;
+            } else {
+                alert(result.message || "Login successful");
+            }
         } else {
-            showToast("Invalid password. Try again.", "error");
+            alert(result.message || "Login failed");
         }
-    } else if (authMode === "signup") {
-        if (password.length < 6) {
-            showToast("Password must be at least 6 characters long.", "error");
-            return;
-        }
-
-        const hashedPassword = await hashPassword(password);
-        localStorage.setItem("userPassword", hashedPassword);
-        showPopup("Sign up successful! You can now log in.");
-        document.getElementById("password-box").value = "";
-        authMode = ""; // Reset mode after successful signup
+    } catch (error) {
+        toggleLoadingSpinner(false);
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
     }
 }
 
-async function hashPassword(password) {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(password);
-    const hash = await crypto.subtle.digest("SHA-256", data);
-    return Array.from(new Uint8Array(hash))
-        .map(b => b.toString(16).padStart(2, "0"))
-        .join("");
+function toggleLoadingSpinner(show) {
+    const spinner = document.getElementById("loading-spinner");
+    spinner.style.display = show ? "block" : "none";
 }
-
-function showPopup(message) {
-    const popup = document.getElementById("popup");
-    const popupMessage = document.getElementById("popup-message");
-
-    popupMessage.textContent = message;
-    popup.classList.remove("hidden");
-}
-
-function closePopup() {
-    const popup = document.getElementById("popup");
-    popup.classList.add("hidden");
-}
-
-function showToast(message, type = "success") {
-    const toast = document.createElement("div");
-    toast.textContent = message;
-    toast.style.position = "fixed";
-    toast.style.bottom = "20px";
-    toast.style.right = "20px";
-    toast.style.padding = "10px";
-    toast.style.backgroundColor = type === "success" ? "green" : "red";
-    toast.style.color = "white";
-    toast.style.borderRadius = "5px";
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
-}
-

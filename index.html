@@ -17,22 +17,24 @@
         <h2> Please log in or sign up to get started :D</h2>
 
 
-        <div id="mode-selection">
-            <button onclick="showPasswordInput('login')">Login</button>
-            <button onclick="showPasswordInput('signup')">Sign Up</button>
+        <div class="form-container">
+            <h2>Sign Up</h2>
+            <input type="text" id="signup-username" placeholder="Enter username"><br>
+            <input type="password" id="signup-password" placeholder="Enter password"><br>
+            <button onclick="signUp()">Sign Up</button>
+            <p id="signup-result"></p>
         </div>
-
-        <div id="password-input" class="hidden">
-            <p id="auth-message"></p>
-            <input type="password" id="password-box" placeholder="Enter your password">
-            <button onclick="authenticateUser()">Submit</button>
+    
+        <div class="form-container">
+            <h2>Login</h2>
+            <input type="text" id="login-username" placeholder="Enter username"><br>
+            <input type="password" id="login-password" placeholder="Enter password"><br>
+            <button onclick="login()">Login</button>
+            <p id="login-result"></p>
         </div>
-
-        <div id="popup" class="hidden">
-            <p id="popup-message"></p>
-            <button onclick="closePopup()">OK</button>
-        </div>
-    </main>
-</body>
+    
+        <!-- Loading spinner (hidden by default) -->
+        <div id="loading-spinner" style="display:none;">Loading...</div>
+    </body>
 
 </html>
