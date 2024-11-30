@@ -23,7 +23,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // Populate the list with the fetched entries
             archiveList.innerHTML = entries
-                .map(entry => `<li>${new Date(entry.date).toLocaleDateString()}: ${entry.entry_text}</li>`)
+                .map(entry => {
+                    const date = new Date(entry.entry_date); // Parse the entry_date
+                    const formattedDate = isNaN(date) ? "Invalid Date" : date.toLocaleString(); // Format the date
+                    return `<li>${formattedDate}: ${entry.entry_text}</li>`;
+                })
                 .join("");
         } catch (error) {
             console.error("Error loading archived entries:", error);

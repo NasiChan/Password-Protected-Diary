@@ -97,7 +97,7 @@ app.post('/save-entry', (req, res) => {
         return res.status(400).send({ message: 'Username and entry text are required' });
     }
 
-    const query = 'INSERT INTO diary_entries (username, entry_text, entry_date) VALUES (?, ?, ?)';
+    const query = 'INSERT INTO entries (username, entry_text, entry_date) VALUES (?, ?, ?)';
     const params = [username, entryText, new Date()];
     console.log('Executing query:', query, params);
 
@@ -117,7 +117,7 @@ app.get('/get-entries', (req, res) => {
         return res.status(400).send({ message: 'Username is required.' });
     }
 
-    const query = 'SELECT * FROM diary_entries WHERE username = ? ORDER BY entry_date DESC';
+    const query = 'SELECT * FROM entries WHERE username = ? ORDER BY entry_date DESC';
     const params = [username];
     console.log('Executing query:', query, params);
 
