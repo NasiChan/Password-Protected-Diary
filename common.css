@@ -20,7 +20,7 @@ header {
     font-size: 40px;
     text-align: center;
     padding: 10px;
-    background-image: linear-gradient(to right, #b86565, #f67b7b);
+    background-image: linear-gradient(to right, #783c3c, #c16363, #f97676, #f6adad);
     background-clip: text;
     margin-bottom: 20px;
 }
