@@ -1,3 +1,4 @@
+//#region index.html
 const express = require('express');
 const mysql = require('mysql');
 const cors = require('cors');
@@ -86,3 +87,46 @@ app.post('/login', (req, res) => {
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
 });
+//#endregion
+
+//#region diary.html and archive.html
+app.post('/save-entry', (req, res) => {
+    const { username, entryText } = req.body;
+
+    if (!username || !entryText) {
+        return res.status(400).send({ message: 'Username and entry text are required' });
+    }
+
+    const query = 'INSERT INTO diary_entries (username, entry_text, entry_date) VALUES (?, ?, ?)';
+    const params = [username, entryText, new Date()];
+    console.log('Executing query:', query, params);
+
+    db.query(query, params, (err, result) => {
+        if (err) {
+            console.error('Error saving entry:', err.sqlMessage || err);
+            return res.status(500).send({ message: 'Error saving entry.' });
+        }
+        res.status(200).send({ message: 'Entry saved successfully!' });
+    });
+});
+
+app.get('/get-entries', (req, res) => {
+    const { username } = req.query;
+
+    if (!username) {
+        return res.status(400).send({ message: 'Username is required.' });
+    }
+
+    const query = 'SELECT * FROM diary_entries WHERE username = ? ORDER BY entry_date DESC';
+    const params = [username];
+    console.log('Executing query:', query, params);
+
+    db.query(query, params, (err, results) => {
+        if (err) {
+            console.error('Error retrieving entries:', err.sqlMessage || err);
+            return res.status(500).send({ message: 'Error retrieving entries.' });
+        }
+        res.status(200).json(results);
+    });
+});
+//#endregion

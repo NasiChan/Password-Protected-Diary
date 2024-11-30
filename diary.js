@@ -1,4 +1,3 @@
-
 document.addEventListener("DOMContentLoaded", () => {
     const diaryEntry = document.getElementById("diary-entry");
     const saveButton = document.getElementById("save-entry");
@@ -33,14 +32,5 @@ document.addEventListener("DOMContentLoaded", () => {
     loadEntries(); // Initial load of entries when page loads
 });
 
-function showToast(message, type) {
-    const toast = document.createElement('div');
-    toast.classList.add('toast', type);
-    toast.textContent = message;
-    document.body.appendChild(toast);
 
-    setTimeout(() => {
-        toast.remove();
-    }, 3000);
-}
 

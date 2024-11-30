@@ -36,6 +36,7 @@ function login() {
     .then(response => response.json())
     .then(data => {
         if (data.redirect) {
+            localStorage.setItem("username", username);
             // Redirect to the diary.html page after successful login
             window.location.href = 'http://localhost:3000/diary.html';  // Use relative URL to access diary.html
         } else {
@@ -63,5 +64,4 @@ document.addEventListener('DOMContentLoaded', function () {
         signUp();  // Call the sign-up function on button click
     });
 
-    // Add more page-specific functionality as needed
 });
