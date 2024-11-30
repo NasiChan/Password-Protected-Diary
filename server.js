@@ -2,15 +2,15 @@ const express = require('express');
 const mysql = require('mysql');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-
+const path = require('path');
 // Create an Express application
 const app = express();
-const port = 3000; // You can change this to any port you prefer
+const port = 3000; 
 
 // Middleware setup
 app.use(cors());
 app.use(bodyParser.json()); // To parse JSON body in requests
-
+app.use(express.static(path.join(__dirname)));
 // MySQL connection setup
 const db = mysql.createConnection({
     host: 'localhost',

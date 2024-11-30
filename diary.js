@@ -1,3 +1,4 @@
+
 document.addEventListener("DOMContentLoaded", () => {
     const diaryEntry = document.getElementById("diary-entry");
     const saveButton = document.getElementById("save-entry");
