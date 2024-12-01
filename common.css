@@ -71,6 +71,9 @@ button {
 button:hover {
     background-color: #db9898;
 }
+.delete-button{
+    border-radius: 5px;
+}
 
 /* Inputs */
 input[type="password"],

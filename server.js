@@ -6,7 +6,7 @@ const bodyParser = require('body-parser');
 const path = require('path');
 // Create an Express application
 const app = express();
-const port = 3000; 
+const port = 3000;
 
 // Middleware setup
 app.use(cors());
@@ -129,4 +129,57 @@ app.get('/get-entries', (req, res) => {
         res.status(200).json(results);
     });
 });
+
+app.post('/delete-entry', (req, res) => {
+    const { id } = req.body;
+
+    if (!id) {
+        return res.status(400).send({ message: "Entry ID is required." });
+    }
+
+    const deleteQuery = "DELETE FROM entries WHERE id = ?";
+    db.query(deleteQuery, [id], (err, result) => {
+        if (err) {
+            console.error("Error deleting entry:", err.sqlMessage || err);
+            return res.status(500).send({ message: "Error deleting entry." });
+        }
+
+        // Step 2: Reorder IDs
+        const reorderQuery = `
+            SET @row_number = 0;
+            UPDATE entries SET id = (@row_number := @row_number + 1);
+        `;
+        db.query(reorderQuery, (err, result) => {
+            if (err) {
+                console.error("Error reordering IDs:", err.sqlMessage || err);
+                return res.status(500).send({ message: "Error reordering IDs." });
+            }
+
+            res.status(200).send({ message: "Entry deleted successfully." });
+        });
+    });
+});
+
+app.post('/update-entry', (req, res) => {
+    const { id, entry_text } = req.body;
+
+    if (!id || !entry_text) {
+        return res.status(400).send({ message: "Entry ID and text are required." });
+    }
+
+    const query = "UPDATE entries SET entry_text = ? WHERE id = ?";
+    db.query(query, [entry_text, id], (err, result) => {
+        if (err) {
+            console.error("Error updating entry:", err.sqlMessage || err);
+            return res.status(500).send({ message: "Error updating entry." });
+        }
+
+        if (result.affectedRows === 0) {
+            return res.status(404).send({ message: "Entry not found." });
+        }
+
+        res.status(200).send({ message: "Entry updated successfully." });
+    });
+});
+
 //#endregion
