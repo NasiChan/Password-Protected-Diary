@@ -14,50 +14,38 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        const storedPassword = localStorage.getItem("userPassword");
-        const hashedCurrentPassword = await hashPassword(currentPassword);
-
-        if (hashedCurrentPassword !== storedPassword) {
-            showToast("Current password is incorrect.", "error");
-            return;
-        }
-
         if (newPassword.length < 6) {
             showToast("New password must be at least 6 characters long.", "error");
             return;
         }
 
-        const hashedNewPassword = await hashPassword(newPassword);
-        localStorage.setItem("userPassword", hashedNewPassword);
+        try {
+            const response = await fetch('http://localhost:3000/update-password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    currentPassword,
+                    newPassword,
+                    username: localStorage.getItem("username"), // assuming username is stored after login
+                }),
+            });
 
-        showToast("Password updated successfully!", "success");
-        currentPasswordInput.value = "";
-        newPasswordInput.value = "";
-    }
+            const data = await response.json();
 
-    // Change Theme Function
-    function setTheme(theme) {
-        const root = document.documentElement;
-        switch (theme) {
-            case "light":
-                root.style.setProperty("--background-color", "#ffffff");
-                root.style.setProperty("--text-color", "#000000");
-                root.style.setProperty("--header-color", "#007bff");
-                break;
-            case "dark":
-                root.style.setProperty("--background-color", "#121212");
-                root.style.setProperty("--text-color", "#ffffff");
-                root.style.setProperty("--header-color", "#1e1e1e");
-                break;
-            default:
-                root.style.removeProperty("--background-color");
-                root.style.removeProperty("--text-color");
-                root.style.removeProperty("--header-color");
+            if (response.ok) {
+                showToast(data.message, "success");
+                currentPasswordInput.value = "";
+                newPasswordInput.value = "";
+            } else {
+                showToast(data.message || "Failed to update password.", "error");
+            }
+        } catch (error) {
+            console.error("Error updating password:", error);
+            showToast("An error occurred. Please try again later.", "error");
         }
-        showToast(`Theme changed to ${theme}`, "success");
     }
-
-    // Attach global functions to the window object
     window.updatePassword = updatePassword;
     window.setTheme = setTheme;
 });

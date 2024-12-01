@@ -1,17 +1,19 @@
+
 //#region index.html
 const express = require('express');
 const mysql = require('mysql');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
-// Create an Express application
+
 const app = express();
 const port = 3000;
 
 // Middleware setup
 app.use(cors());
-app.use(bodyParser.json()); // To parse JSON body in requests
+app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname)));
+
 // MySQL connection setup
 const db = mysql.createConnection({
     host: 'localhost',
@@ -29,12 +31,49 @@ db.connect((err) => {
     console.log('Connected to the MySQL database');
 });
 
-// Basic Health Check Route (GET)
+//#region Helper Functions
+
+// Function to get user by username
+async function getUserByUsername(username) {
+    return new Promise((resolve, reject) => {
+        const query = "SELECT * FROM users WHERE username = ?";
+        db.query(query, [username], (err, results) => {
+            if (err) {
+                console.error("Error fetching user:", err);
+                return reject(err);
+            }
+            if (results.length === 0) {
+                return resolve(null); // User not found
+            }
+            resolve(results[0]); // Return the first result
+        });
+    });
+}
+
+// Function to update user's password
+async function updateUserPassword(username, newPassword) {
+    return new Promise((resolve, reject) => {
+        const query = "UPDATE users SET password = ? WHERE username = ?";
+        db.query(query, [newPassword, username], (err, result) => {
+            if (err) {
+                console.error("Error updating password:", err);
+                return reject(err);
+            }
+            resolve(result);
+        });
+    });
+}
+
+//#endregion Helper Functions
+
+//#region Routes
+
+// Basic health check route
 app.get('/', (req, res) => {
     res.send('Server is up and running!');
 });
 
-// Sign-up route: POST /signup
+// Sign-up route
 app.post('/signup', (req, res) => {
     const { username, password } = req.body;
 
@@ -42,7 +81,6 @@ app.post('/signup', (req, res) => {
         return res.status(400).send('Username and password are required');
     }
 
-    // Save the user in the database (without hashing)
     const query = 'INSERT INTO users (username, password) VALUES (?, ?)';
     db.query(query, [username, password], (err, result) => {
         if (err) {
@@ -52,6 +90,7 @@ app.post('/signup', (req, res) => {
     });
 });
 
+// Login route
 app.post('/login', (req, res) => {
     const { username, password } = req.body;
 
@@ -59,7 +98,6 @@ app.post('/login', (req, res) => {
         return res.status(400).send({ message: 'Username and password are required' });
     }
 
-    // Retrieve user from the database by username
     const query = 'SELECT * FROM users WHERE username = ?';
     db.query(query, [username], (err, result) => {
         if (err) {
@@ -72,9 +110,7 @@ app.post('/login', (req, res) => {
 
         const storedPassword = result[0].password;
 
-        // Compare the input password with the stored password (no hashing)
         if (password === storedPassword) {
-            // Return a response with a redirect
             res.status(200).json({ message: 'Login successful', redirect: '/diary.html' });
         } else {
             res.status(400).json({ message: 'Invalid password' });
@@ -82,11 +118,48 @@ app.post('/login', (req, res) => {
     });
 });
 
+// Update password route
+app.post('/update-password', async (req, res) => {
+    const { username, currentPassword, newPassword } = req.body;
+
+    if (!username || !currentPassword || !newPassword) {
+        return res.status(400).json({ message: "All fields are required." });
+    }
+
+    if (newPassword.length < 6) {
+        return res.status(400).json({ message: "New password must be at least 6 characters long." });
+    }
+
+    try {
+        // Get the user from the database
+        const user = await getUserByUsername(username);
+        if (!user) {
+            return res.status(404).json({ message: "User not found." });
+        }
+
+        // Verify the current password matches
+        if (user.password !== currentPassword) {
+            return res.status(403).json({ message: "Current password is incorrect." });
+        }
+
+        // Update the password
+        await updateUserPassword(username, newPassword);
+
+        res.status(200).json({ message: "Password updated successfully." });
+    } catch (error) {
+        console.error("Error updating password:", error);
+        res.status(500).json({ message: "Internal server error." });
+    }
+});
+
+//#endregion Routes
 
 // Start the Express server
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
 });
+
+
 //#endregion
 
 //#region diary.html and archive.html
@@ -114,21 +187,31 @@ app.get('/get-entries', (req, res) => {
     const { username } = req.query;
 
     if (!username) {
+        console.error("No username provided in request");
         return res.status(400).send({ message: 'Username is required.' });
     }
 
     const query = 'SELECT * FROM entries WHERE username = ? ORDER BY entry_date DESC';
     const params = [username];
-    console.log('Executing query:', query, params);
+
+    console.log('Executing query:', query, params); // Log the query and parameters
 
     db.query(query, params, (err, results) => {
         if (err) {
-            console.error('Error retrieving entries:', err.sqlMessage || err);
+            console.error('Error executing query:', err.sqlMessage || err);
             return res.status(500).send({ message: 'Error retrieving entries.' });
         }
+
+        console.log('Query executed successfully. Results:', results); // Log the raw results
+        if (results.length === 0) {
+            console.log('No entries found for username:', username);
+            return res.status(404).send({ message: 'No entries found for this user.' });
+        }
+
         res.status(200).json(results);
     });
 });
+
 
 app.post('/delete-entry', (req, res) => {
     const { id } = req.body;
@@ -180,6 +263,41 @@ app.post('/update-entry', (req, res) => {
 
         res.status(200).send({ message: "Entry updated successfully." });
     });
+});
+//#endregion
+
+//#region settings.js
+app.post('/update-password', async (req, res) => {
+    const { username, currentPassword, newPassword } = req.body;
+
+    if (!username || !currentPassword || !newPassword) {
+        return res.status(400).json({ message: "All fields are required." });
+    }
+
+    if (newPassword.length < 6) {
+        return res.status(400).json({ message: "New password must be at least 6 characters long." });
+    }
+
+    try {
+        const user = await getUserByUsername(username); // Function to fetch user data
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found." });
+        }
+
+        const isMatch = await bcrypt.compare(currentPassword, user.passwordHash);
+        if (!isMatch) {
+            return res.status(403).json({ message: "Current password is incorrect." });
+        }
+
+        const newHashedPassword = await bcrypt.hash(newPassword, 10);
+        await updateUserPassword(username, newHashedPassword); // Function to update password
+
+        res.status(200).json({ message: "Password updated successfully." });
+    } catch (error) {
+        console.error("Error updating password:", error);
+        res.status(500).json({ message: "Internal server error." });
+    }
 });
 
 //#endregion
