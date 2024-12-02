@@ -39,6 +39,17 @@ nav a {
     text-decoration: underline dotted #db9898;
 }
 
+.archive-list {
+/* Initial height to show a summary */
+  max-height: 100px;
+  overflow: hidden;
+}
+
+.archive-list.expanded {
+    max-height: none;
+    overflow: auto;
+}
+
 /* Main Section */
 main {
     max-width: 800px;
