@@ -34,7 +34,7 @@ nav {
 nav a {
     margin: 0 10px;
     color: #b86565;
-    font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
     font-size: 18px;
     text-decoration: underline dotted #db9898;
 }
@@ -55,8 +55,13 @@ main {
 
 /* Animation for home page */
 @keyframes fadeIn {
-    0% { opacity: 0; }
-    100% { opacity: 1; }
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
 }
 
 /* Buttons */
@@ -71,7 +76,8 @@ button {
 button:hover {
     background-color: #db9898;
 }
-.delete-button{
+
+.delete-button {
     border-radius: 5px;
 }
 
@@ -80,8 +86,27 @@ input[type="password"],
 textarea {
     width: 100%;
     padding: 8px;
-    margin: 10px 0;
+    min-height: 40px;
+    resize: none;
+    overflow: hidden;
+    line-height: 1.5;
     border: 1px solid #fac4c4;
+}
+
+input[type="text"] {
+    width: 100%;
+    height: auto;
+    padding: 8px;
+    min-height: 40px;
+    resize: none;
+    overflow-y: hidden;
+    line-height: 1.5;
+    border: 1px solid #fac4c4;
+}
+
+input[type="text"]:focus {
+    outline: none;
+    border-color: #dfafaf;
 }
 
 /* Sections */
@@ -110,10 +135,15 @@ section h2 {
     background-color: #eee;
 }
 
-/* Hidden Elements */
+/* for visibility toggling */
 .hidden {
     display: none;
 }
+
+.visible {
+    display: inline-block;
+}
+
 
 /* Popup */
 #popup {
@@ -146,6 +176,7 @@ section h2 {
     from {
         transform: rotate(0deg);
     }
+
     to {
         transform: rotate(360deg);
     }

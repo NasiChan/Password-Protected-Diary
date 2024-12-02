@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,13 +9,14 @@
   <script src="common.js" defer></script>
   <script src="settings.js" defer></script>
 </head>
+
 <body>
   <nav>
-    <a href="index.html">Exit</a>
     <a href="diary.html">Diary</a>
-    <a href="about.html">About</a>
     <a href="archive.html">Archive</a>
     <a href="settings.html">Settings</a>
+    <a href="about.html">About</a>
+    <a href="index.html">Exit</a>
   </nav>
 
   <main>
@@ -25,16 +27,23 @@
       <h2>Update Password</h2>
       <form id="password-form">
         <label for="current-password">Current Password:</label>
-        <input type="password" id="current-password" placeholder="Enter current password">
+        <input type="password" id="current-password" placeholder="Enter current password" required>
+        
         <label for="new-password">New Password:</label>
-        <input type="password" id="new-password" placeholder="Enter new password">
+        <input type="password" id="new-password" placeholder="Enter new password" required>
+        
+        <label for="confirm-new-password">Confirm New Password:</label>
+        <input type="password" id="confirm-new-password" placeholder="Confirm new password" required>
+        
         <button type="button" onclick="updatePassword()">Update Password</button>
         <p id="password-message" class="hidden">Password updated successfully!</p>
-      </form>
+    </form>
+    
     </section>
 
-  
+
   </main>
 
 </body>
+
 </html>

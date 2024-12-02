@@ -1,10 +1,15 @@
 document.addEventListener("DOMContentLoaded", () => {
     const archiveList = document.getElementById("archive-list");
 
+    /**
+     * Load Archived Entries: Fetches diary entries for the logged-in user and displays them in the archive list.
+     * Expects: The username to be stored in `localStorage`.
+     * Preconditions: The user must be logged in, and the username must be stored in `localStorage`.
+     * Postconditions: Populates the archive list with the fetched entries and attaches event listeners to the Edit and Delete buttons.
+     */
     async function loadArchivedEntries() {
         try {
-            // Replace 'username' with the currently logged-in user's username
-            const username = localStorage.getItem('username'); // Example: store username in localStorage during login
+            const username = localStorage.getItem('username');
             if (!username) {
                 showToast('Error: Username not found.', 'error');
                 return;
@@ -21,42 +26,59 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            // Populate the list with the fetched entries
+            // Populate the list with entries
             archiveList.innerHTML = entries
                 .map(entry => {
-                    const date = new Date(entry.entry_date); // Parse the entry_date
-                    const formattedDate = isNaN(date) ? "Invalid Date" : date.toLocaleString(); // Format the date
-                    return `<li id="entry-${entry.id}">
-                        <span id="entry-text-${entry.id}">${formattedDate}: ${entry.entry_text}</span>
-                        <button class="delete-button" data-id="${entry.id}">Delete</button>
-                        <button class="edit-button" data-id="${entry.id}">Edit</button>
-                    </li>`;
+                    const date = new Date(entry.entry_date);
+                    const formattedDate = isNaN(date) ? "Invalid Date" : date.toLocaleString();
+                    return `
+                        <li id="entry-${entry.id}">
+                            <span id="entry-text-${entry.id}">${formattedDate}: ${entry.entry_text}</span>
+                            <button class="delete-button" data-id="${entry.id}">Delete</button>
+                            <button class="edit-button" data-id="${entry.id}">Edit</button>
+                        </li>`;
                 })
                 .join("");
 
             // Attach event listeners to Delete and Edit buttons
-            const deleteButtons = document.querySelectorAll(".delete-button");
-            deleteButtons.forEach(button => {
-                button.addEventListener("click", async (event) => {
-                    const entryId = event.target.getAttribute("data-id");
-                    await deleteEntry(entryId);
-                    loadArchivedEntries(); // Reload the entries after deletion
-                });
-            });
-
-            const editButtons = document.querySelectorAll(".edit-button");
-            editButtons.forEach(button => {
-                button.addEventListener("click", (event) => {
-                    const entryId = event.target.getAttribute("data-id");
-                    handleEditClick(entryId);
-                });
-            });
+            attachEventListeners();
         } catch (error) {
             console.error("Error loading archived entries:", error);
             showToast("Error loading entries. Please try again.", "error");
         }
     }
 
+    /**
+     * Attach Event Listeners: Adds event listeners to the Delete and Edit buttons for each entry.
+     * Expects: Entries with delete and edit buttons.
+     * Preconditions: The archive list must contain entries with corresponding Edit and Delete buttons.
+     * Postconditions: Attaches event listeners that allow the user to delete or edit entries.
+     */
+    function attachEventListeners() {
+        const deleteButtons = document.querySelectorAll(".delete-button");
+        deleteButtons.forEach(button => {
+            button.addEventListener("click", async (event) => {
+                const entryId = event.target.getAttribute("data-id");
+                await deleteEntry(entryId);
+                loadArchivedEntries(); // Reload the entries after deletion
+            });
+        });
+
+        const editButtons = document.querySelectorAll(".edit-button");
+        editButtons.forEach(button => {
+            button.addEventListener("click", (event) => {
+                const entryId = event.target.getAttribute("data-id");
+                handleEditClick(entryId);
+            });
+        });
+    }
+
+    /**
+     * Delete Diary Entry: Deletes a diary entry by its ID.
+     * @param {string} entryId - The ID of the entry to delete.
+     * Preconditions: The entry with the given ID must exist in the database.
+     * Postconditions: The entry is deleted from the database and the UI is updated to reflect the deletion.
+     */
     async function deleteEntry(entryId) {
         try {
             const response = await fetch(`http://localhost:3000/delete-entry`, {
@@ -79,29 +101,65 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    /**
+     * Handle Edit Click: Initiates the editing process for a specific diary entry.
+     * @param {string} entryId - The ID of the entry to edit.
+     * Preconditions: The entry with the given ID must exist in the DOM and be displayed.
+     * Postconditions: Replaces the entry text with an input field for editing, and adds Save and Cancel buttons.
+     */
     function handleEditClick(entryId) {
         const entryTextElement = document.getElementById(`entry-text-${entryId}`);
-        const currentText = entryTextElement.textContent.split(": ")[1]; // Extract the existing text
+        const editButton = document.querySelector(`.edit-button[data-id="${entryId}"]`);
+        const deleteButton = document.querySelector(`.delete-button[data-id="${entryId}"]`);
+        const currentText = entryTextElement.textContent.split(": ")[1];
+
+        // Hide Edit and Delete buttons
+        editButton.classList.add("hidden");
+        deleteButton.classList.add("hidden");
 
         // Replace text with an input box and Save/Cancel buttons
         entryTextElement.innerHTML = `
             <input type="text" id="edit-input-${entryId}" value="${currentText}">
-            <button class="save-edit-button" data-id="${entryId}">Save</button>
-            <button class="cancel-edit-button" data-id="${entryId}">Cancel</button>
+            <button class="save-edit-button visible" data-id="${entryId}">Save</button>
+            <button class="cancel-edit-button visible" data-id="${entryId}">Cancel</button>
         `;
+
+        const editInput = document.getElementById(`edit-input-${entryId}`);
+        editInput.style.height = "auto"; // Reset height to auto
+        editInput.style.height = `${editInput.scrollHeight}px`; // Set height to fit content
+
+        // Dynamically resize the input as the user types
+        editInput.addEventListener("input", () => {
+            editInput.style.height = "auto"; // Reset height to auto
+            editInput.style.height = `${editInput.scrollHeight}px`; // Adjust the height based on content
+        });
 
         // Attach event listeners to Save and Cancel buttons
         document.querySelector(`.save-edit-button[data-id="${entryId}"]`).addEventListener("click", async () => {
-            const updatedText = document.getElementById(`edit-input-${entryId}`).value;
+            const updatedText = editInput.value;
             await updateEntry(entryId, updatedText);
-            loadArchivedEntries(); // Reload entries after editing
+
+            // Reload entries after editing
+            loadArchivedEntries();
         });
 
         document.querySelector(`.cancel-edit-button[data-id="${entryId}"]`).addEventListener("click", () => {
-            entryTextElement.innerHTML = `${currentText}`; // Restore the original text
+            // Restore the original text
+            entryTextElement.innerHTML = `${currentText}`;
+
+            // Show Edit and Delete buttons
+            editButton.classList.remove("hidden");
+            deleteButton.classList.remove("hidden");
         });
     }
 
+    /**
+     * Update Diary Entry: Updates the text of an existing diary entry.
+     * @param {string} entryId - The ID of the entry to update.
+     * @param {string} updatedText - The new text for the diary entry.
+     * Preconditions: The entry with the given ID must exist in the database.
+     * Postconditions: The diary entry is updated in the database and the UI is updated to reflect the changes.
+     */
     async function updateEntry(entryId, updatedText) {
         try {
             const response = await fetch(`http://localhost:3000/update-entry`, {
@@ -124,5 +182,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    /**
+     * Initial Load: Triggers the loading of archived entries on page load.
+     * Preconditions: The page must be fully loaded and the user must be logged in.
+     * Postconditions: Displays the list of archived entries for the logged-in user.
+     */
     loadArchivedEntries();
 });

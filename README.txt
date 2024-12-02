@@ -14,7 +14,7 @@ Features:
 ├── setting.html      # Setting page
 ├── archives          # Archives page
 ├── common.js         # Diary common functionality
-├──index.js           # Inex page specific functionality
+├──index.js           # Index page specific functionality
 ├──diary.js           # Diary page specific functionality
 ├──about.js           # About page specific functionality
 ├──setting.js         # Setting page specific functionality
@@ -23,4 +23,6 @@ Features:
 ├──server.js          # Contain our API logic
 └── README.md         # Project details
 
-Authors: Shreya, Nas, Nitya
+Authors: Shreya, Nas
+
+Issues:

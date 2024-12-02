@@ -1,34 +1,32 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // Elements
     const currentPasswordInput = document.getElementById("current-password");
     const newPasswordInput = document.getElementById("new-password");
-    const passwordMessage = document.getElementById("password-message");
+    const confirmNewPasswordInput = document.getElementById("confirm-new-password");
 
-    // Update Password Function
     async function updatePassword() {
         const currentPassword = currentPasswordInput.value.trim();
         const newPassword = newPasswordInput.value.trim();
+        const confirmNewPassword = confirmNewPasswordInput.value.trim();
 
-        if (!currentPassword || !newPassword) {
-            showToast("Both fields are required.", "error");
+        if (!currentPassword || !newPassword || !confirmNewPassword) {
+            showToast("All fields are required.", "error");
             return;
         }
 
-        if (newPassword.length < 6) {
-            showToast("New password must be at least 6 characters long.", "error");
+        if (newPassword !== confirmNewPassword) {
+            showToast("New password and confirm password do not match.", "error");
             return;
         }
 
         try {
             const response = await fetch('http://localhost:3000/update-password', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
+                    username: localStorage.getItem("username"),
                     currentPassword,
                     newPassword,
-                    username: localStorage.getItem("username"), // assuming username is stored after login
+                    confirmNewPassword
                 }),
             });
 
@@ -38,6 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 showToast(data.message, "success");
                 currentPasswordInput.value = "";
                 newPasswordInput.value = "";
+                confirmNewPasswordInput.value = "";
             } else {
                 showToast(data.message || "Failed to update password.", "error");
             }
@@ -46,6 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
             showToast("An error occurred. Please try again later.", "error");
         }
     }
+
     window.updatePassword = updatePassword;
-    window.setTheme = setTheme;
 });
+
