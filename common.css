@@ -16,6 +16,7 @@ body {
 /* Header */
 header {
     color: transparent;
+    font-family: cursive;
     font-size: 40px;
     text-align: center;
     padding: 10px;
