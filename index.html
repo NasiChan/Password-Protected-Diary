@@ -6,37 +6,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Password Protected Diary Login</title>
     <link rel="stylesheet" href="common.css">
+    <script src="index.js" ></script>
     <script src="common.js" defer></script>
-    <script src="index.js" defer></script>
+
 </head>
 
-<body>
+<body onload="initializePage()">
 
     <main>
-        <h1> Welcome to the diary!</h1>
-        <h2> Please log in or sign up to get started!</h2>
-
-
-        <div class="form-container">
+        <h1>Welcome to the diary!</h1>
+        <h2>Please log in or sign up to get started!</h2>
+    
+        <div class="button-container">
+            <button id="signup-button">Sign Up</button>
+            <button id="login-button">Login</button>
+        </div>
+    
+        <div id="signup-form" class="form-container hidden">
             <h2>Sign Up</h2>
             <input type="text" id="signup-username" placeholder="Enter username"><br>
             <input type="password" id="signup-password" placeholder="Enter password"><br>
-            <button onclick="signUp()">Sign Up</button>
+            <button onclick="signUp()" >Sign Up</button>
             <p id="signup-result"></p>
         </div>
-
-        <div class="form-container">
+    
+        <div id="login-form" class="form-container hidden">
             <h2>Login</h2>
             <input type="text" id="login-username" placeholder="Enter username"><br>
             <input type="password" id="login-password" placeholder="Enter password"><br>
-            <button onclick="login()">Login</button>
+            <button onclick="login()" >Login</button>
             <p id="login-result"></p>
         </div>
-
-        <!-- Loading spinner (hidden by default) -->
+    
         <div id="loading-spinner">Loading...</div>
-        <div id="diary-content-container"></div>
     </main>
+    
 </body>
 
 </html>

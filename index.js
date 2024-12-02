@@ -1,5 +1,25 @@
 const apiUrl = 'http://localhost:3000';
 
+
+function initializePage() {
+    console.log("Page initialized!");
+    const signupButton = document.getElementById('signup-button');
+    const loginButton = document.getElementById('login-button');
+    const signupForm = document.getElementById('signup-form');
+    const loginForm = document.getElementById('login-form');
+
+    signupButton.addEventListener('click', () => {
+        signupForm.classList.remove('hidden');
+        signupForm.classList.add('visible');
+        loginForm.classList.add('hidden');
+    });
+
+    loginButton.addEventListener('click', () => {
+        loginForm.classList.remove('hidden');
+        loginForm.classList.add('visible');
+        signupForm.classList.add('hidden');
+    });
+}
 /**
  * Sign-Up Function: Registers a new user by sending the provided username and password to the backend.
  * 
@@ -25,7 +45,7 @@ async function signUp() {
             body: JSON.stringify({ username, password }),
         });
 
-        // Handle server responses
+      
         if (!response.ok) {
             const errorText = await response.text();
             throw new Error(`Error ${response.status}: ${errorText}`);
@@ -64,7 +84,6 @@ async function login() {
             body: JSON.stringify({ username, password }),
         });
 
-        // Handle server responses
         if (!response.ok) {
             const errorText = await response.text();
             throw new Error(`Error ${response.status}: ${errorText}`);
@@ -79,19 +98,12 @@ async function login() {
             showToast(data.message, "error");
         }
     } catch (error) {
-        handleClientError(error, 'login-error');
+        handleClientError(error, 'login-result');
     }
 }
 
 /**
- * Client-Side Error Handling: Displays an appropriate error message for client-side errors.
- * 
- * Preconditions:
- * - The error message should be passed to this function, typically originating from the API call.
- * 
- * Postconditions:
- * - The error message is displayed in the specified element (`resultElementId`).
- * - The error is logged to the console for debugging purposes.
+ * Handles client-side errors by displaying appropriate error messages.
  */
 function handleClientError(error, resultElementId) {
     const errorMessage = error.message.includes('Failed to fetch')
@@ -103,32 +115,20 @@ function handleClientError(error, resultElementId) {
 }
 
 /**
- * Toggle Loading Spinner: Displays or hides the loading spinner based on the given flag.
- * 
- * Preconditions:
- * - The `loading-spinner` element must be present in the DOM.
- * 
- * Postconditions:
- * - The loading spinner is displayed if `show` is true; otherwise, it is hidden.
+ * Toggles the visibility of the loading spinner.
  */
 function toggleLoadingSpinner(show) {
     const spinner = document.getElementById("loading-spinner");
     spinner.style.display = show ? "block" : "none";
 }
 
-// Event listeners for form submissions on index.html
-document.addEventListener('DOMContentLoaded', function () {
-    // Sign-up form event listener
-    const signUpButton = document.getElementById('signup-button');
-    signUpButton.addEventListener('click', function (e) {
-        e.preventDefault();
-        signUp();  // Call the sign-up function on button click
-    });
+/**
+ * Initializes event listeners for toggling between login and signup forms.
+ * Called when the page is fully loaded.
+ */
 
-    // Login form event listener
-    const loginButton = document.getElementById('login-button');
-    loginButton.addEventListener('click', function (e) {
-        e.preventDefault();
-        login();  // Call the login function on button click
-    });
-});
+
+
+// Exporting for testing or external usage
+// export { signUp, login };
+

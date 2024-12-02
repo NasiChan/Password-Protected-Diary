@@ -23,6 +23,16 @@ Features:
 ├──server.js          # Contain our API logic
 └── README.md         # Project details
 
-Authors: Shreya, Nas
+Author 1:
+    Full-Name: Nastaran Pedari
+    Student ID: 221709258
+    York Email: pedari83@my.yorku.ca
+Author 2:
+    Full-Name: Shreya Achari
+    Student ID: 221134226
+    York Email: shreyaa1@my.yorku.ca
 
 Issues:
+Unfortunately, Nitya (3rd group member) was unable to contribute to the project, so we had to proceed without her involvement
+As you know, we initially started this project as a team of three. However, due to Nitya’s inability to 
+contribute to Phase Two, we had to proceed with the video production as a team of two.

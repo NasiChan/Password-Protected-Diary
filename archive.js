@@ -3,7 +3,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /**
      * Load Archived Entries: Fetches diary entries for the logged-in user and displays them in the archive list.
-     * Expects: The username to be stored in `localStorage`.
      * Preconditions: The user must be logged in, and the username must be stored in `localStorage`.
      * Postconditions: Populates the archive list with the fetched entries and attaches event listeners to the Edit and Delete buttons.
      */
@@ -26,7 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            // Populate the list with entries
+            // Populate the archive list with entries
             archiveList.innerHTML = entries
                 .map(entry => {
                     const date = new Date(entry.entry_date);
@@ -40,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 })
                 .join("");
 
-            // Attach event listeners to Delete and Edit buttons
+            // Attach event listeners for editing and deleting
             attachEventListeners();
         } catch (error) {
             console.error("Error loading archived entries:", error);
@@ -50,9 +49,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /**
      * Attach Event Listeners: Adds event listeners to the Delete and Edit buttons for each entry.
-     * Expects: Entries with delete and edit buttons.
      * Preconditions: The archive list must contain entries with corresponding Edit and Delete buttons.
-     * Postconditions: Attaches event listeners that allow the user to delete or edit entries.
+     * Postconditions: Listeners allow the user to delete or edit entries.
      */
     function attachEventListeners() {
         const deleteButtons = document.querySelectorAll(".delete-button");
@@ -60,7 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
             button.addEventListener("click", async (event) => {
                 const entryId = event.target.getAttribute("data-id");
                 await deleteEntry(entryId);
-                loadArchivedEntries(); // Reload the entries after deletion
+                loadArchivedEntries(); // Reload entries after deletion
             });
         });
 
@@ -68,14 +66,70 @@ document.addEventListener("DOMContentLoaded", () => {
         editButtons.forEach(button => {
             button.addEventListener("click", (event) => {
                 const entryId = event.target.getAttribute("data-id");
-                handleEditClick(entryId);
+                handleEditClick(entryId); // Initiate editing for the selected entry
             });
         });
     }
 
     /**
+     * Handle Edit Click: Initiates the editing process for a specific diary entry.
+     * Preconditions: The entry with the given ID must exist in the DOM.
+     * Postconditions: Replaces the entry text with an input box and Save/Cancel buttons, adjusts the input height dynamically.
+     */
+    function handleEditClick(entryId) {
+        const entryTextElement = document.getElementById(`entry-text-${entryId}`);
+        const editButton = document.querySelector(`.edit-button[data-id="${entryId}"]`);
+        const deleteButton = document.querySelector(`.delete-button[data-id="${entryId}"]`);
+        
+        // Preserve the original text using a data attribute
+        const currentText = entryTextElement.textContent.split(": ")[1];
+        entryTextElement.setAttribute("data-original-text", currentText); // Store original text in a data attribute
+    
+        // Hide Edit and Delete buttons
+        editButton.classList.add("hidden");
+        deleteButton.classList.add("hidden");
+    
+        // Replace text with a textarea for editing
+        entryTextElement.innerHTML = `
+            <textarea id="edit-input-${entryId}">${currentText}</textarea>
+            <button class="save-edit-button visible" data-id="${entryId}">Save</button>
+            <button class="cancel-edit-button visible" data-id="${entryId}">Cancel</button>
+        `;
+    
+        // Adjust textarea height to match content
+        const editInput = document.getElementById(`edit-input-${entryId}`);
+        editInput.style.height = "auto";
+        editInput.style.height = `${editInput.scrollHeight}px`;
+    
+        // Dynamically resize the textarea as the user types
+        editInput.addEventListener("input", () => {
+            editInput.style.height = "auto";
+            editInput.style.height = `${editInput.scrollHeight}px`;
+        });
+    
+        // Save updated entry
+        document.querySelector(`.save-edit-button[data-id="${entryId}"]`).addEventListener("click", async () => {
+            const updatedText = editInput.value.trim();
+            if (updatedText) {
+                await updateEntry(entryId, updatedText);
+                loadArchivedEntries();
+            } else {
+                showToast("Entry cannot be empty.", "error");
+            }
+        });
+    
+        // Cancel editing and revert to original content
+        document.querySelector(`.cancel-edit-button[data-id="${entryId}"]`).addEventListener("click", () => {
+            const originalText = entryTextElement.getAttribute("data-original-text"); // Retrieve original text
+            entryTextElement.innerHTML = `${originalText}`; // Restore original text
+            editButton.classList.remove("hidden");
+            deleteButton.classList.remove("hidden");
+        });
+    }
+    
+
+    /**
      * Delete Diary Entry: Deletes a diary entry by its ID.
-     * @param {string} entryId - The ID of the entry to delete.
      * Preconditions: The entry with the given ID must exist in the database.
      * Postconditions: The entry is deleted from the database and the UI is updated to reflect the deletion.
      */
@@ -83,9 +137,7 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const response = await fetch(`http://localhost:3000/delete-entry`, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ id: entryId }),
             });
 
@@ -102,61 +154,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /**
-     * Handle Edit Click: Initiates the editing process for a specific diary entry.
-     * @param {string} entryId - The ID of the entry to edit.
-     * Preconditions: The entry with the given ID must exist in the DOM and be displayed.
-     * Postconditions: Replaces the entry text with an input field for editing, and adds Save and Cancel buttons.
-     */
-    function handleEditClick(entryId) {
-        const entryTextElement = document.getElementById(`entry-text-${entryId}`);
-        const editButton = document.querySelector(`.edit-button[data-id="${entryId}"]`);
-        const deleteButton = document.querySelector(`.delete-button[data-id="${entryId}"]`);
-        const currentText = entryTextElement.textContent.split(": ")[1];
-
-        // Hide Edit and Delete buttons
-        editButton.classList.add("hidden");
-        deleteButton.classList.add("hidden");
-
-        // Replace text with an input box and Save/Cancel buttons
-        entryTextElement.innerHTML = `
-            <input type="text" id="edit-input-${entryId}" value="${currentText}">
-            <button class="save-edit-button visible" data-id="${entryId}">Save</button>
-            <button class="cancel-edit-button visible" data-id="${entryId}">Cancel</button>
-        `;
-
-        const editInput = document.getElementById(`edit-input-${entryId}`);
-        editInput.style.height = "auto"; // Reset height to auto
-        editInput.style.height = `${editInput.scrollHeight}px`; // Set height to fit content
-
-        // Dynamically resize the input as the user types
-        editInput.addEventListener("input", () => {
-            editInput.style.height = "auto"; // Reset height to auto
-            editInput.style.height = `${editInput.scrollHeight}px`; // Adjust the height based on content
-        });
-
-        // Attach event listeners to Save and Cancel buttons
-        document.querySelector(`.save-edit-button[data-id="${entryId}"]`).addEventListener("click", async () => {
-            const updatedText = editInput.value;
-            await updateEntry(entryId, updatedText);
-
-            // Reload entries after editing
-            loadArchivedEntries();
-        });
-
-        document.querySelector(`.cancel-edit-button[data-id="${entryId}"]`).addEventListener("click", () => {
-            // Restore the original text
-            entryTextElement.innerHTML = `${currentText}`;
-
-            // Show Edit and Delete buttons
-            editButton.classList.remove("hidden");
-            deleteButton.classList.remove("hidden");
-        });
-    }
-
-    /**
      * Update Diary Entry: Updates the text of an existing diary entry.
-     * @param {string} entryId - The ID of the entry to update.
-     * @param {string} updatedText - The new text for the diary entry.
      * Preconditions: The entry with the given ID must exist in the database.
      * Postconditions: The diary entry is updated in the database and the UI is updated to reflect the changes.
      */
@@ -164,9 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const response = await fetch(`http://localhost:3000/update-entry`, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ id: entryId, entry_text: updatedText }),
             });
 
@@ -182,10 +178,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    /**
-     * Initial Load: Triggers the loading of archived entries on page load.
-     * Preconditions: The page must be fully loaded and the user must be logged in.
-     * Postconditions: Displays the list of archived entries for the logged-in user.
-     */
+    // Initial load of archived entries on page load
     loadArchivedEntries();
 });
